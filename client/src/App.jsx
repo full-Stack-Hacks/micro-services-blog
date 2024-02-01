@@ -1,33 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import PostForm from './components/PostForm'
+import Posts from './components/Posts'
 import './App.css'
 
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [posts, setPosts] = useState([])
+
+  useEffect(() => {
+    const getPosts = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/posts')
+        const data = await res.json()
+
+        setPosts(Object.values(data))
+      } catch (error) {
+        console.error(error.message)
+      }
+    }
+
+    getPosts()
+  }, [])
+
+  const createPost = async (text) => {
+    try {
+      const res = await fetch('http://localhost:4000/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title: text }) // Corrected to match expected server-side field
+      });
+  
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+  
+      const data = await res.json(); // Correctly parse the JSON response
+
+      const newPosts = Object.values(data)
+      
+      setPosts(newPosts)
+    } catch (error) {
+      console.error(error.message)
+    }
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <PostForm createPost={createPost} />
+      <Posts posts={posts} />
     </>
   )
 }

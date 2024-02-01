@@ -1,5 +1,6 @@
 const express = require('express')
 const {randomBytes} = require('crypto')
+const cors = require('cors')
 
 const app = express()
 
@@ -8,6 +9,7 @@ const PORT = process.env.PORT || 4001
 const posts = {}
 
 app.use(express.json())
+app.use(cors())
 
 // object key id that posts to an array of comments. Comment will have id and content
 const commentsByPostId = {}
@@ -27,7 +29,7 @@ app.post('/posts/:id/comments', (req, res) => {
 
     commentsByPostId[req.params.id] = comments
 
-    res.status(201).send(comments)
+    res.status(201).json(comments)
 })
 
 app.listen(PORT, function() {
